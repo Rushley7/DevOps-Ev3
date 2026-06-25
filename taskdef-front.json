@@ -1,0 +1,25 @@
+{
+  "family": "rushley-front",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "256",
+  "memory": "512",
+  "executionRoleArn": "arn:aws:iam::570246018842:role/LabRole",
+  "taskRoleArn": "arn:aws:iam::570246018842:role/LabRole",
+  "containerDefinitions": [
+    {
+      "name": "front",
+      "image": "570246018842.dkr.ecr.us-east-1.amazonaws.com/rushley-front:latest",
+      "portMappings": [{ "containerPort": 80, "protocol": "tcp" }],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/rushley-front",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "ecs",
+          "awslogs-create-group": "true"
+        }
+      }
+    }
+  ]
+}

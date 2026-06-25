@@ -1,0 +1,30 @@
+{
+  "family": "rushley-ventas",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "256",
+  "memory": "512",
+  "executionRoleArn": "arn:aws:iam::570246018842:role/LabRole",
+  "taskRoleArn": "arn:aws:iam::570246018842:role/LabRole",
+  "containerDefinitions": [
+    {
+      "name": "ventas",
+      "image": "570246018842.dkr.ecr.us-east-1.amazonaws.com/rushley-ventas:latest",
+      "portMappings": [{ "containerPort": 8081, "protocol": "tcp" }],
+      "environment": [
+        { "name": "SPRING_DATASOURCE_URL", "value": "jdbc:mysql://rushley-db.ceplguzwspve.us-east-1.rds.amazonaws.com:3306/ventasdb" },
+        { "name": "SPRING_DATASOURCE_USERNAME", "value": "admin" },
+        { "name": "SPRING_DATASOURCE_PASSWORD", "value": "rushley77" }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/rushley-ventas",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "ecs",
+          "awslogs-create-group": "true"
+        }
+      }
+    }
+  ]
+}
