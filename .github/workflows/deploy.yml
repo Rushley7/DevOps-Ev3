@@ -1,0 +1,96 @@
+name: Build and Deploy to ECS
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy-ventas:
+    name: Deploy Ventas
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: us-east-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push Ventas image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          cd back-Ventas_SpringBoot
+          docker build -t $ECR_REGISTRY/rushley-ventas:latest -f Dockerfile Springboot-API-REST
+          docker push $ECR_REGISTRY/rushley-ventas:latest
+
+      - name: Deploy Ventas to ECS
+        run: |
+          aws ecs update-service --cluster rushley-cluster --service rushley-ventas-service --force-new-deployment
+
+  deploy-despachos:
+    name: Deploy Despachos
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: us-east-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push Despachos image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          cd back-Despachos_SpringBoot
+          docker build -t $ECR_REGISTRY/rushley-despachos:latest -f Dockerfile Springboot-API-REST-DESPACHO
+          docker push $ECR_REGISTRY/rushley-despachos:latest
+
+      - name: Deploy Despachos to ECS
+        run: |
+          aws ecs update-service --cluster rushley-cluster --service rushley-despachos-service --force-new-deployment
+
+  deploy-front:
+    name: Deploy Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: us-east-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push Frontend image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          cd front_despacho
+          docker build -t $ECR_REGISTRY/rushley-front:latest .
+          docker push $ECR_REGISTRY/rushley-front:latest
+
+      - name: Deploy Frontend to ECS
+        run: |
+          aws ecs update-service --cluster rushley-cluster --service rushley-front-service --force-new-deployment
